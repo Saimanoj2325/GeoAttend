@@ -1,4 +1,34 @@
-# Project exclude paths
-/.gradle/
+# Built objects
+bin/
+gen/
+obj/
 /build/
-/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/
+
+# Gradle
+.gradle/
+build/
+*.hprof
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+/captures/
+.externalNativeBuild
+.cxx
+local.properties
+
+# Firebase
+# google-services.json contains project keys and should be ignored for public repos
+google-services.json
+
+# Device specific / OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Sensitive Info
+secrets.xml
