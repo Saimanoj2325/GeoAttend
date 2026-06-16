@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GeoAttend</string>
+    <string name="user_name">Alex Rivera</string>
+    <string name="greeting_morning">Good morning, %1$s</string>
+    <string name="current_status">CURRENT STATUS</string>
+    <string name="not_checked_in">Not Checked In</string>
+    <string name="target_hours">TARGET\n8h</string>
+    <string name="work_hours_logged">Work Hours Logged Today</string>
+    <string name="punch_in_now">Punch In Now</string>
+    <string name="check_in">Check In</string>
+    <string name="apply_leave">Apply Leave</string>
+    <string name="back">Back</string>
+    <string name="verification">Verification</string>
+    <string name="enter_otp">Enter OTP</string>
+    <string name="sign_in">Sign In</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="login_via_otp">Login via OTP</string>
+    <string name="gps_checkin">GPS Check-in</string>
+    <string name="ready_to_checkin">Ready to Check-in?</string>
+    <string name="gps_check_in">GPS Check-in</string>
+    <string name="you_are_currently_inside_the_hq_geofence_tap_to_record_attendance">You are currently inside the HQ geofence. Tap to record attendance.</string>
+</resources>

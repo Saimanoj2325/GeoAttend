@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.geoattend">
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+
+    <application
+        android:name=".GeoAttendApp"
+        android:allowBackup="true"
+        android:icon="@drawable/otp_bg"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.GeoAttend">
+
+        <!-- Admin Side Activities -->
+        <activity android:name=".admin.AdminDashboardActivity" />
+        <activity android:name=".admin.GeofenceManagerActivity" />
+        <activity android:name=".admin.AddGeofenceActivity" />
+
+        <!-- Employee Side Activities -->
+        <activity android:name=".employee.EmployeeDashboardActivity" />
+        <activity android:name=".employee.FaceVerificationActivity" />
+        <activity android:name=".employee.FaceEnrollmentActivity" />
+        <activity android:name=".employee.NotificationsActivity" />
+        <activity android:name=".employee.ProfileActivity" />
+
+        <service
+            android:name=".service.GeofenceBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
+        <receiver
+            android:name=".service.GeofenceBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.GeoAttend">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".RegisterActivity" />
+        <activity android:name=".VerificationActivity" />
+        <activity android:name=".AttendanceHistoryActivity" />
+        <activity android:name=".LeaveDashboardActivity" />
+
+    </application>
+</manifest>
