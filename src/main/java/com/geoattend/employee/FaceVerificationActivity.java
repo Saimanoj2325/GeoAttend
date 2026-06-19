@@ -59,6 +59,12 @@ public class FaceVerificationActivity extends AppCompatActivity {
     private TextView tvInstruction;
     private ProgressBar progressBar;
     private androidx.camera.view.PreviewView previewView;
+
+    // Dynamic UI Components
+    private TextView tvStepIndicator, tvProgressPercent;
+    private View chipFace, chipLiveness, chipMatching;
+    private TextView tvChipFace, tvChipLiveness, tvChipMatching;
+    private View progressActive, progressInactive;
     
     private static final double MATCH_THRESHOLD = 0.95; // Balanced threshold for MobileFaceNet
     private int matchFailureCount = 0;
@@ -68,12 +74,13 @@ public class FaceVerificationActivity extends AppCompatActivity {
     private List<String> passedChallenges = new ArrayList<>();
 
     private enum State {
+        DETECTION,
         CHALLENGE,
         MATCHING,
         VERIFIED,
         FAILED
     }
-    private State currentState = State.CHALLENGE;
+    private State currentState = State.DETECTION;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +90,18 @@ public class FaceVerificationActivity extends AppCompatActivity {
         tvInstruction = findViewById(R.id.tvInstruction);
         progressBar = findViewById(R.id.progressBar);
         previewView = findViewById(R.id.previewView);
+
+        // Init Dynamic UI
+        tvStepIndicator = findViewById(R.id.tv_step_indicator);
+        tvProgressPercent = findViewById(R.id.tv_progress_percent);
+        chipFace = findViewById(R.id.chip_face_detected);
+        chipLiveness = findViewById(R.id.chip_liveness);
+        chipMatching = findViewById(R.id.chip_matching);
+        tvChipFace = findViewById(R.id.tv_chip_face_detected);
+        tvChipLiveness = findViewById(R.id.tv_chip_liveness);
+        tvChipMatching = findViewById(R.id.tv_chip_matching);
+        progressActive = findViewById(R.id.view_progress_active);
+        progressInactive = findViewById(R.id.view_progress_inactive);
 
         if (getIntent().hasExtra("type")) {
             attendanceType = getIntent().getStringExtra("type");
@@ -110,6 +129,78 @@ public class FaceVerificationActivity extends AppCompatActivity {
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 3001);
         }
+
+        updateDynamicUI();
+    }
+
+    private void updateDynamicUI() {
+        runOnUiThread(() -> {
+            int stepNum = 1;
+            int targetProgress = 0;
+            
+            // Reset colors
+            int colorDefault = ContextCompat.getColor(this, R.color.text_secondary);
+            int colorActive = ContextCompat.getColor(this, R.color.accent_emerald);
+            
+            tvChipFace.setTextColor(colorDefault);
+            tvChipLiveness.setTextColor(colorDefault);
+            tvChipMatching.setTextColor(colorDefault);
+
+            switch (currentState) {
+                case DETECTION:
+                    stepNum = 1;
+                    targetProgress = 20;
+                    tvChipFace.setTextColor(colorActive);
+                    break;
+                case CHALLENGE:
+                    stepNum = 2;
+                    targetProgress = 33 + (int)(((float)livenessStep / challenges.size()) * 33);
+                    tvChipFace.setTextColor(colorActive);
+                    tvChipLiveness.setTextColor(colorActive);
+                    break;
+                case MATCHING:
+                    stepNum = 3;
+                    targetProgress = 85;
+                    tvChipFace.setTextColor(colorActive);
+                    tvChipLiveness.setTextColor(colorActive);
+                    tvChipMatching.setTextColor(colorActive);
+                    break;
+                case VERIFIED:
+                    stepNum = 3;
+                    targetProgress = 100;
+                    tvChipFace.setTextColor(colorActive);
+                    tvChipLiveness.setTextColor(colorActive);
+                    tvChipMatching.setTextColor(colorActive);
+                    break;
+            }
+
+            tvStepIndicator.setText(String.format(Locale.getDefault(), "Step %d of 3", stepNum));
+            
+            // Animate progress change
+            animateProgress(targetProgress);
+        });
+    }
+
+    private void animateProgress(int target) {
+        android.widget.LinearLayout.LayoutParams activeParams = (android.widget.LinearLayout.LayoutParams) progressActive.getLayoutParams();
+        float start = activeParams.weight;
+        
+        android.animation.ValueAnimator animator = android.animation.ValueAnimator.ofFloat(start, target);
+        animator.setDuration(600);
+        animator.setInterpolator(new android.view.animation.DecelerateInterpolator());
+        animator.addUpdateListener(animation -> {
+            float val = (float) animation.getAnimatedValue();
+            
+            activeParams.weight = val;
+            progressActive.setLayoutParams(activeParams);
+
+            android.widget.LinearLayout.LayoutParams inactiveParams = (android.widget.LinearLayout.LayoutParams) progressInactive.getLayoutParams();
+            inactiveParams.weight = 100 - val;
+            progressInactive.setLayoutParams(inactiveParams);
+            
+            tvProgressPercent.setText(String.format(Locale.getDefault(), "%d%%", (int)val));
+        });
+        animator.start();
     }
 
     private void setupChallenges() {
@@ -179,6 +270,11 @@ public class FaceVerificationActivity extends AppCompatActivity {
                     if (!faces.isEmpty()) {
                         handleLivenessAndMatch(faces.get(0), imageProxy);
                     } else {
+                        if (currentState != State.DETECTION && currentState != State.VERIFIED && currentState != State.FAILED) {
+                            currentState = State.DETECTION;
+                            livenessStep = 0;
+                            updateDynamicUI();
+                        }
                         imageProxy.close();
                     }
                 })
@@ -189,6 +285,11 @@ public class FaceVerificationActivity extends AppCompatActivity {
     }
 
     private void handleLivenessAndMatch(Face face, ImageProxy imageProxy) {
+        if (currentState == State.DETECTION) {
+            currentState = State.CHALLENGE;
+            updateDynamicUI();
+        }
+
         if (currentState == State.CHALLENGE) {
             if (livenessStep < challenges.size()) {
                 String currentChallenge = challenges.get(livenessStep);
@@ -213,8 +314,10 @@ public class FaceVerificationActivity extends AppCompatActivity {
                 if (passed) {
                     passedChallenges.add(currentChallenge);
                     livenessStep++;
+                    updateDynamicUI();
                     if (livenessStep >= challenges.size()) {
                         currentState = State.MATCHING;
+                        updateDynamicUI();
                         runOnUiThread(() -> {
                             tvInstruction.setText("IDENTIFYING...");
                             tvInstruction.setTextColor(ContextCompat.getColor(this, com.geoattend.R.color.accent_blue));
@@ -234,6 +337,7 @@ public class FaceVerificationActivity extends AppCompatActivity {
 
                 if (minMatchDistance < MATCH_THRESHOLD) {
                     currentState = State.VERIFIED;
+                    updateDynamicUI();
                     runOnUiThread(() -> {
                         tvInstruction.setText("IDENTITY VERIFIED");
                         tvInstruction.setTextColor(ContextCompat.getColor(this, com.geoattend.R.color.accent_emerald));

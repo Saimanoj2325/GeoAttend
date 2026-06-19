@@ -46,9 +46,10 @@
             app:layout_constraintTop_toTopOf="@id/btn_back" />
 
         <TextView
+            android:id="@+id/tv_step_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Step 2 of 2"
+            android:text="Step 1 of 3"
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="@id/tv_header"
@@ -163,6 +164,7 @@
             android:orientation="horizontal">
 
             <LinearLayout
+                android:id="@+id/chip_face_detected"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
@@ -172,15 +174,17 @@
                 android:padding="12dp">
 
                 <TextView
+                    android:id="@+id/tv_chip_face_detected"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Face Detected"
-                    android:textColor="@color/accent_emerald"
+                    android:textColor="@color/text_secondary"
                     android:textSize="10sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/chip_liveness"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="6dp"
@@ -190,15 +194,17 @@
                 android:padding="12dp">
 
                 <TextView
+                    android:id="@+id/tv_chip_liveness"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Liveness"
-                    android:textColor="@color/accent_emerald"
+                    android:textColor="@color/text_secondary"
                     android:textSize="10sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/chip_matching"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
@@ -208,6 +214,7 @@
                 android:padding="12dp">
 
                 <TextView
+                    android:id="@+id/tv_chip_matching"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Matching"
@@ -231,10 +238,11 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/tv_progress_percent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:text="67%"
+                android:text="0%"
                 android:textColor="@color/accent_emerald"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -248,16 +256,18 @@
             android:orientation="horizontal">
 
             <View
+                android:id="@+id/view_progress_active"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginEnd="4dp"
-                android:layout_weight="67"
+                android:layout_weight="0"
                 android:background="@drawable/bg_indicator_active" />
 
             <View
+                android:id="@+id/view_progress_inactive"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="33"
+                android:layout_weight="100"
                 android:background="@drawable/bg_indicator_inactive" />
 
         </LinearLayout>

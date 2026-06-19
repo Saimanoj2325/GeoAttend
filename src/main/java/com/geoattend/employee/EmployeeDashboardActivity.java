@@ -766,9 +766,40 @@ public class EmployeeDashboardActivity extends AppCompatActivity {
         }
     }
 
+    private void addOfficeMarker() {
+        if (assignedGeofence == null) return;
+        
+        // Remove existing office markers
+        List<org.osmdroid.views.overlay.Overlay> overlays = binding.mapView.getOverlays();
+        for (int i = overlays.size() - 1; i >= 0; i--) {
+            if (overlays.get(i) instanceof Marker && "Office".equals(((Marker)overlays.get(i)).getId())) {
+                overlays.remove(i);
+            }
+        }
+
+        GeoPoint center = new GeoPoint(assignedGeofence.getLatitude(), assignedGeofence.getLongitude());
+        Marker officeMarker = new Marker(binding.mapView);
+        officeMarker.setId("Office");
+        officeMarker.setPosition(center);
+        officeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        
+        Drawable icon = ContextCompat.getDrawable(this, R.drawable.ic_location_pin);
+        if (icon != null) {
+            icon.setTint(ContextCompat.getColor(this, R.color.accent_blue));
+            officeMarker.setIcon(icon);
+        }
+        binding.mapView.getOverlays().add(officeMarker);
+    }
+
     private void updateProximityUI(Location location) {
         if (assignedGeofence == null) return;
         
+        // Update user marker position explicitly if needed, though MyLocationOverlay handles it
+        // We'll ensure myLocationOverlay is following
+        if (myLocationOverlay != null && !myLocationOverlay.isFollowLocationEnabled()) {
+            myLocationOverlay.enableFollowLocation();
+        }
+
         // 1. Security Check: Mock Location Detection
         int mockRisk = SecurityManager.getMockRiskScore(location, this);
         boolean isCompromised = SecurityManager.isDeviceCompromised();
