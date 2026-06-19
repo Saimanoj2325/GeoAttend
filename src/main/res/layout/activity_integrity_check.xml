@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <!-- Top Glow -->
+    <View
+        android:id="@+id/view_glow"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
+        android:background="@drawable/bg_glow_blue"
+        android:alpha="0.3"
+        app:layout_constraintBottom_toTopOf="@+id/tv_security_header"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Shield Icon & Scanning Pulse -->
+    <FrameLayout
+        android:id="@+id/frame_shield"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/tv_security_header"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <View
+            android:id="@+id/scan_pulse_1"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center"
+            android:background="@drawable/circle_primary"
+            android:alpha="0" />
+
+        <View
+            android:id="@+id/scan_pulse_2"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center"
+            android:background="@drawable/circle_primary"
+            android:alpha="0" />
+
+        <ImageView
+            android:id="@+id/iv_shield"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_shield"
+            app:tint="@color/accent_blue" />
+
+        <View
+            android:id="@+id/scan_line"
+            android:layout_width="100dp"
+            android:layout_height="2dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/splash_gradient"
+            android:alpha="0.6"
+            android:translationY="-40dp" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tv_security_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="System Integrity Check"
+        android:textColor="@color/white"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/tv_security_desc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frame_shield" />
+
+    <TextView
+        android:id="@+id/tv_security_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Securing your environment..."
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/card_report"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_security_header" />
+
+    <!-- List of Security Checks -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_report"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="32dp"
+        app:cardBackgroundColor="@color/surface_l1"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/divider"
+        app:strokeWidth="1dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_security_desc"
+        app:layout_constraintVertical_bias="0.1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Check 1: Root -->
+            <LinearLayout
+                android:id="@+id/row_root"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="20dp"
+                android:alpha="0.4">
+
+                <ImageView
+                    android:id="@+id/icon_root"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/dot_inactive"
+                    app:tint="@color/text_disabled" />
+
+                <TextView
+                    android:id="@+id/tv_root"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:text="Root Access Check"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <ProgressBar
+                    android:id="@+id/pb_root"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:visibility="gone"
+                    android:indeterminateTint="@color/accent_blue" />
+            </LinearLayout>
+
+            <!-- Check 2: Debugging -->
+            <LinearLayout
+                android:id="@+id/row_debug"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="20dp"
+                android:alpha="0.4">
+
+                <ImageView
+                    android:id="@+id/icon_debug"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/dot_inactive"
+                    app:tint="@color/text_disabled" />
+
+                <TextView
+                    android:id="@+id/tv_debug"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:text="USB Debugging Status"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <ProgressBar
+                    android:id="@+id/pb_debug"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:visibility="gone"
+                    android:indeterminateTint="@color/accent_blue" />
+            </LinearLayout>
+
+            <!-- Check 3: Mock Location -->
+            <LinearLayout
+                android:id="@+id/row_mock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="20dp"
+                android:alpha="0.4">
+
+                <ImageView
+                    android:id="@+id/icon_mock"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/dot_inactive"
+                    app:tint="@color/text_disabled" />
+
+                <TextView
+                    android:id="@+id/tv_mock"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:text="Location Integrity"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <ProgressBar
+                    android:id="@+id/pb_mock"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:visibility="gone"
+                    android:indeterminateTint="@color/accent_blue" />
+            </LinearLayout>
+
+            <!-- Check 4: Network Security -->
+            <LinearLayout
+                android:id="@+id/row_vpn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:alpha="0.4">
+
+                <ImageView
+                    android:id="@+id/icon_vpn"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/dot_inactive"
+                    app:tint="@color/text_disabled" />
+
+                <TextView
+                    android:id="@+id/tv_vpn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:text="VPN &amp; Proxy Detection"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <ProgressBar
+                    android:id="@+id/pb_vpn"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:visibility="gone"
+                    android:indeterminateTint="@color/accent_blue" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

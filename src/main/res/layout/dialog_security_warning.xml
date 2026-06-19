@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="24dp"
+    app:cardBackgroundColor="@color/surface_l1"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="8dp"
+    app:strokeColor="@color/error"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Icon with Glow -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
+
+            <View
+                android:id="@+id/warning_icon_glow"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle_error"
+                android:alpha="0.2" />
+
+            <ImageView
+                android:id="@+id/iv_warning_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_shield"
+                app:tint="@color/error" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tv_warning_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Security Violation"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_warning_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:text="USB Debugging is enabled. GeoAttend cannot run on debuggable environments for security."
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <!-- Actions -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_fix_settings"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="32dp"
+            android:backgroundTint="@color/error"
+            android:text="FIX IN SETTINGS"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_exit_app"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="8dp"
+            android:text="EXIT APPLICATION"
+            android:textColor="@color/text_disabled"
+            app:cornerRadius="14dp" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

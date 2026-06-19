@@ -76,6 +76,14 @@ public class SecurityManager {
     }
 
     /**
+     * Check if USB Debugging (ADB) is enabled
+     */
+    public static boolean isUsbDebuggingEnabled(Context context) {
+        return Settings.Global.getInt(context.getContentResolver(),
+                Settings.Global.ADB_ENABLED, 0) != 0;
+    }
+
+    /**
      * App Integrity Check (Play Integrity placeholder)
      * In production, this would return the Integrity Token to be verified on backend.
      */
