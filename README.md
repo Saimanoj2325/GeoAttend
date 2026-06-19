@@ -36,38 +36,38 @@ Unlike standard apps, GeoAttend assumes the device environment is hostile until 
 
 ---
 
-## 🗺️ User Journey & System Flow
+## 🗺️ System Workflow
 
 ```mermaid
-sequenceDiagram
-    participant U as Employee
-    participant APP as GeoAttend App
-    participant SEC as Security Manager
-    participant AI as ML Engine
-    participant FB as Firebase
-
-    U->>APP: Opens App (Splash)
-    APP->>SEC: Integrity Check (Root/Mock GPS)
-    SEC-->>APP: Device Validated
-    APP->>FB: Check Auth & Status
+graph TD
+    Start((App Open)) --> Scan[System Integrity Scan]
+    Scan --> Integrity{Environment Safe?}
     
-    Note over APP,AI: If New User
-    U->>APP: Enter Details (Register)
-    APP->>FB: Send OTP via SMTP
-    U->>APP: Verify OTP
-    U->>AI: Biometric Enrollment (Liveness Check)
-    AI->>FB: Store Face Embedding
+    Integrity -- No --> Block[Show Security Violation]
+    Integrity -- Yes --> Auth[Check Auth Status]
+    
+    Auth --> NewUser{New User?}
+    
+    NewUser -- Yes --> Reg[Register & OTP Verify]
+    Reg --> Enroll[AI Biometric Enrollment]
+    Enroll --> Login
+    
+    NewUser -- No --> Login[Access Dashboard]
+    
+    Login --> Geo[Geofence Pulse]
+    Geo --> Zone{Inside Zone?}
+    
+    Zone -- No --> Dist[Show Distance to Office]
+    Zone -- Yes --> Face[AI Face Verification]
+    
+    Face --> Success[Mark Attendance & Sync]
+    Success --> End((Done))
 
-    Note over APP,SEC: Standard Check-In
-    U->>APP: Approaches Office
-    APP->>SEC: Geofence Pulse (OSM)
-    alt Inside Geofence
-        APP->>U: Enable Check-In (Confidence Chip)
-        U->>AI: Face Verification
-        AI->>FB: Log Attendance (Server Timestamp)
-    else Outside Geofence
-        APP->>U: Show Distance to Office
-    end
+    style Integrity fill:#f96,stroke:#333
+    style Zone fill:#f96,stroke:#333
+    style NewUser fill:#f96,stroke:#333
+    style Success fill:#1EC98E,stroke:#333
+    style Block fill:#EF4444,stroke:#333
 ```
 
 ---
