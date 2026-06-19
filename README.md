@@ -2,7 +2,7 @@
 
 [![ML: On-Device](https://img.shields.io/badge/AI-On--Device%20TFLite-blue)](https://github.com/Saimanoj2325/GeoAttend)
 [![Platform: Android](https://img.shields.io/badge/Platform-Android-3DDC84)](https://github.com/Saimanoj2325/GeoAttend)
-[![SSecurity: Multi Layered Security](https://img.shields.io/badge/Security%20MultiLayered)](https://github.com/Saimanoj2325/GeoAttend)
+[![Security](https://img.shields.io/badge/Security-Multi%20Layered-green)](https://github.com/Saimanoj2325/GeoAttend)
 
 GeoAttend is an Android attendance app that combines **geofencing**, **on-device face verification**, and **device-integrity checks** (root/mock-location/ADB detection) to reduce common attendance-fraud vectors — buddy punching, GPS spoofing, and photo-based spoofing of check-ins.
 
