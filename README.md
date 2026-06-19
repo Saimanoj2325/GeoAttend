@@ -11,7 +11,7 @@ Built solo as a personal project. Core security and ML logic is implemented and 
 ## 🎥 Demo
 
 <p align="center">
-  <img src="src/main/assets/demo.gif" alt="GeoAttend Demo" width="300"/>
+  <img src="app/src/main/assets/demo.gif" alt="GeoAttend Demo" width="300"/>
 </p>
 
 <p align="center">
