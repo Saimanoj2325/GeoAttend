@@ -76,27 +76,34 @@ graph TD
 
 ```mermaid
 graph TD
-    subgraph Client [Android Client - Java/TFLite]
-        UI[View Layer: XML/ViewBinding]
-        VM[Controller: Dashboards/Activities]
-        SEC[Security: Mock Detect/Device Binding]
-        AI[ML Engine: ML Kit & TFLite]
-        MAP[Map Engine: OSMDroid & Geofence]
+    subgraph Client ["📱 Android Client (Java)"]
+        direction TB
+        UI["🎨 View Layer<br/>(XML / ViewBinding)"]
+        VM["🎮 Controller Layer<br/>(Activities / Logic)"]
+        
+        subgraph Core ["🛠️ Core Engines"]
+            direction LR
+            AI["🧠 ML Engine<br/>(ML Kit & TFLite)"]
+            SEC["🛡️ Security Manager<br/>(Integrity & Mock Detect)"]
+            MAP["📍 Map Engine<br/>(OSM & Geofencing)"]
+        end
+        
+        UI <--> VM
+        VM --> AI
+        VM --> SEC
+        VM --> MAP
     end
 
-    subgraph Backend [Firebase Cloud Backend]
-        AUTH[Firebase Auth: Secure Token]
-        STORE[Firestore: Real-time DB]
-        FUNC[Server Logic: Time Validation]
+    subgraph Backend ["🔥 Firebase Backend"]
+        direction TB
+        AUTH["🔑 Firebase Auth<br/>(Identity Management)"]
+        DB["🗄️ Firestore DB<br/>(Real-time Data)"]
+        Audit["📋 Audit Logic<br/>(Server-side Timestamps)"]
     end
 
-    UI <--> VM
-    VM --> SEC
-    VM --> AI
-    VM --> MAP
-    SEC --> AUTH
-    VM <--> STORE
-    STORE <--> FUNC
+    SEC -.-> AUTH
+    VM <--> DB
+    DB --- Audit
 ```
 
 ---
