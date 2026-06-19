@@ -1,6 +1,7 @@
 package com.geoattend.model;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.ServerTimestamp;
 import java.util.Map;
 
 public class AttendanceRecord {
@@ -8,6 +9,8 @@ public class AttendanceRecord {
     private String userId;
     private String userName;
     private Timestamp timestamp;
+    
+    @ServerTimestamp
     private Timestamp serverTimestamp;
     private String type; // IN, OUT, AUTO_OUT
     private String geofenceId;
@@ -22,6 +25,7 @@ public class AttendanceRecord {
     private float distanceToOffice;
     private boolean isMockLocation;
     private boolean isRooted;
+    private boolean isUsbDebugging;
     private String integrityVerdict;
     private String livenessResult;
     private int riskScore; // 0 (Safe) to 100 (Critical)
@@ -74,6 +78,8 @@ public class AttendanceRecord {
     public void setMockLocation(boolean mockLocation) { isMockLocation = mockLocation; }
     public boolean isRooted() { return isRooted; }
     public void setRooted(boolean rooted) { isRooted = rooted; }
+    public boolean isUsbDebugging() { return isUsbDebugging; }
+    public void setUsbDebugging(boolean usbDebugging) { isUsbDebugging = usbDebugging; }
     public String getIntegrityVerdict() { return integrityVerdict; }
     public void setIntegrityVerdict(String integrityVerdict) { this.integrityVerdict = integrityVerdict; }
     public String getLivenessResult() { return livenessResult; }

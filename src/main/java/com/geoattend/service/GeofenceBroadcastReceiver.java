@@ -28,17 +28,22 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
             if (triggeringGeofences != null) {
                 for (Geofence geofence : triggeringGeofences) {
-                    autoCheckOut(geofence.getRequestId());
+                    autoCheckOut(context, geofence.getRequestId());
                 }
             }
         }
     }
 
-    private void autoCheckOut(String geofenceId) {
+    private void autoCheckOut(Context context, String geofenceId) {
         String userId = FirebaseHelper.getCurrentUserId();
         AttendanceRecord record = new AttendanceRecord(
-            null, userId, "Employee", Timestamp.now(), "AUTO_OUT", geofenceId, "Auto Geofence", null
+            null, userId, "Auto System", Timestamp.now(), "AUTO_OUT", geofenceId, "Secure Geofence", null
         );
+        
+        record.setDeviceId(com.geoattend.utils.SecurityUtils.getAppSpecificDeviceId(context));
+        record.setLivenessResult("AUTO_EXIT");
+        record.setRooted(com.geoattend.utils.SecurityManager.isDeviceCompromised());
+        record.setStatus("VERIFIED");
 
         FirebaseHelper.getAttendanceRef().add(record)
             .addOnSuccessListener(aVoid -> Log.d(TAG, "Auto Check-out recorded for " + geofenceId))

@@ -1,55 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- PRODUCTION-GRADE PREMIUM OBSIDIAN PALETTE -->
+    <!-- PREMIUM DARK COLOR SYSTEM -->
+    <color name="primary">#071A2F</color>
+    <color name="on_primary">#FFFFFF</color>
 
-    <!-- Core Brand -->
-    <color name="primary">#FFFFFF</color>
-    <color name="on_primary">#000000</color>
-    <color name="primary_dark">#E2E8F0</color>
-    <color name="primary_light">#1E293B</color>
+    <color name="accent_emerald">#1EC98E</color>
+    <color name="accent">#1EC98E</color>
 
-    <!-- Sophisticated Accents -->
-    <color name="accent_gold">#EAB308</color>
-    <color name="accent_emerald">#10B981</color>
-    <color name="accent_blue">#3B82F6</color>
-    <color name="accent_indigo">#6366F1</color>
-
-    <!-- Depth Levels (The Obsidian Stack) -->
-    <color name="background">#020617</color>
-    <color name="surface_l1">#0F172A</color>
-    <color name="surface_l2">#1E293B</color>
-    <color name="surface_l3">#334155</color>
+    <color name="background">#071A2F</color>
+    <color name="surface_l1">#0D223D</color>
+    <color name="surface_l2">#152E4D</color>
+    <color name="surface_l3">#1E3A5E</color>
 
     <!-- Typography -->
-    <color name="text_primary">#F8FAFC</color>
-    <color name="text_secondary">#94A3B8</color>
-    <color name="text_disabled">#475569</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#A5B4C4</color>
+    <color name="text_disabled">#64748B</color>
 
     <!-- Semantic States -->
     <color name="error">#EF4444</color>
-    <color name="error_soft">#450A0A</color>
+    <color name="error_soft">#2D0A0A</color>
+    <color name="accent_blue">#3B82F6</color>
+    <color name="accent_gold">#EAB308</color>
+    <color name="accent_indigo">#6366F1</color>
 
     <!-- Overlays & Borders -->
-    <color name="divider">#1E293B</color>
-    <color name="border_focus">#3B82F6</color>
+    <color name="divider">#1E3A5E</color>
 
     <!-- Gradients -->
-    <color name="gradient_start">#1E1E1E</color>
-    <color name="gradient_end">#020617</color>
+    <color name="background_gradient_start">#0D223D</color>
+    <color name="background_gradient_end">#071A2F</color>
+    <color name="gradient_start">#0D223D</color>
+    <color name="gradient_end">#071A2F</color>
 
-    <!-- Compatibility Aliases -->
-    <color name="surface">#0F172A</color>
-    <color name="surface_variant">#1E293B</color>
-    <color name="on_surface">#F8FAFC</color>
-    <color name="on_surface_light">#94A3B8</color>
-    <color name="on_surface_variant">#64748B</color>
-    <color name="on_background">#F1F5F9</color>
-    <color name="surface_container">#1A1A1C</color>
-    <color name="surface_container_lowest">#0F0F10</color>
-    <color name="outline_variant">#1E293B</color>
-    <color name="accent">#10B981</color>
+    <!-- Soft Accents -->
+    <color name="accent_emerald_soft">#10261E</color>
 
-    <!-- Basics -->
+    <!-- Compatibility Aliases & Material 3 Colors -->
+    <color name="surface">#0D223D</color>
+    <color name="on_surface">#FFFFFF</color>
+    <color name="surface_variant">#152E4D</color>
+    <color name="on_surface_light">#A5B4C4</color>
+    <color name="on_surface_variant">#A5B4C4</color>
+    <color name="on_background">#FFFFFF</color>
+    <color name="surface_container">#0D223D</color>
+    <color name="surface_container_lowest">#071A2F</color>
+    <color name="outline_variant">#1E3A5E</color>
+
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>

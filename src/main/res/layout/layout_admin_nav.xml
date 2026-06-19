@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/admin_nav_dock_container"
+    style="@style/Widget.GeoAttend.FloatingDock"
+    android:layout_width="340dp"
+    android:layout_height="64dp"
+    android:layout_alignParentBottom="true"
+    android:layout_centerHorizontal="true"
+    android:layout_marginBottom="24dp">
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/admin_bottom_navigation"
+        style="@style/Widget.GeoAttend.BottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/surface_l1"
+        app:menu="@menu/admin_nav_menu"
+        app:labelVisibilityMode="labeled" />
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_screen_gradient">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/admin_nav_dock_container"
+        android:padding="20dp">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="24dp"
+            app:cardBackgroundColor="@color/surface_l1"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeColor="@color/divider"
+            app:strokeWidth="1dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_back"
+                app:tint="@color/text_secondary" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Attendance Logs"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/btn_back"
+            app:layout_constraintTop_toTopOf="@id/btn_back" />
+
+        <LinearLayout
+            android:id="@+id/layout_filters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/tv_title">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filter_date"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:text="Today"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/surface_l1"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_calendar"
+                app:iconTint="@color/accent_blue" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filter_status"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="All Status"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/surface_l1"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_flag"
+                app:iconTint="@color/accent_emerald" />
+
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_admin_attendance"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout_filters"
+            tools:listitem="@layout/item_attendance" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Premium Floating Control Dock -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/admin_nav_dock_container"
+        style="@style/Widget.GeoAttend.FloatingDock"
+        android:layout_width="320dp"
+        android:layout_height="64dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="24dp">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/admin_bottom_navigation"
+            style="@style/Widget.GeoAttend.BottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:menu="@menu/admin_nav_menu" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+</RelativeLayout>

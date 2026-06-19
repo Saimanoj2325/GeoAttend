@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="128"
+    android:viewportHeight="128">
+
+    <!-- Hexagon Background -->
+    <path
+        android:pathData="M64,10L112,37V91L64,118L16,91V37L64,10Z"
+        android:fillColor="@color/surface_l1"
+        android:strokeColor="@color/accent_blue"
+        android:strokeWidth="2"/>
+
+    <!-- Inner Shield/Pin Hybrid -->
+    <path
+        android:pathData="M64,30C52,30 42,40 42,54C42,74 64,98 64,98C64,98 86,74 86,54C86,40 76,30 64,30ZM64,68C56.2,68 50,61.8 50,54C50,46.2 56.2,40 64,40C71.8,40 78,46.2 78,54C78,61.8 71.8,68 64,68Z"
+        android:fillColor="@color/accent_emerald"/>
+
+    <!-- Scanning Radar Arc -->
+    <path
+        android:pathData="M40,54A24,24 0 0,1 88,54"
+        android:strokeColor="@color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"/>
+
+</vector>

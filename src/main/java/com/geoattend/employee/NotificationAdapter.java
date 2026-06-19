@@ -43,6 +43,15 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
 
         holder.itemView.setAlpha(item.isRead() ? 0.6f : 1.0f);
+        holder.unreadDot.setVisibility(item.isRead() ? View.GONE : View.VISIBLE);
+
+        holder.itemView.setOnClickListener(v -> {
+            if (!item.isRead() && item.getId() != null) {
+                com.geoattend.utils.FirebaseHelper.getFirestore()
+                    .collection("notifications").document(item.getId())
+                    .update("read", true);
+            }
+        });
     }
 
     @Override
@@ -53,32 +62,38 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvBody, tvTime;
         ImageView ivIcon;
+        View unreadDot;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvTitle = itemView.findViewById(R.id.tvTitle);
-            tvBody = itemView.findViewById(R.id.tvBody);
-            tvTime = itemView.findViewById(R.id.tvTime);
-            ivIcon = itemView.findViewById(R.id.ivIcon);
+            tvTitle = itemView.findViewById(R.id.tv_title);
+            tvBody = itemView.findViewById(R.id.tv_body);
+            tvTime = itemView.findViewById(R.id.tv_time);
+            ivIcon = itemView.findViewById(R.id.iv_icon);
+            unreadDot = itemView.findViewById(R.id.view_unread);
         }
     }
 
     public static class NotificationItem {
+        private String id;
         private String title;
         private String body;
         private String category;
         private Date timestamp;
-        private boolean isRead;
+        private boolean read;
 
         public NotificationItem() {}
-        public NotificationItem(String title, String body, String category, Date timestamp, boolean isRead) {
-            this.title = title; this.body = body; this.category = category; this.timestamp = timestamp; this.isRead = isRead;
+        public NotificationItem(String title, String body, String category, Date timestamp, boolean read) {
+            this.title = title; this.body = body; this.category = category; this.timestamp = timestamp; this.read = read;
         }
 
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
         public String getTitle() { return title; }
         public String getBody() { return body; }
         public String getCategory() { return category; }
         public Date getTimestamp() { return timestamp; }
-        public boolean isRead() { return isRead; }
+        public boolean isRead() { return read; }
+        public void setRead(boolean read) { this.read = read; }
     }
 }

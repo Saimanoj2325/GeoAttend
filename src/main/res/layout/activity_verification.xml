@@ -3,90 +3,246 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@drawable/bg_screen_gradient"
+    android:padding="@dimen/screen_padding">
 
-    <ImageButton
-        android:id="@+id/btn_back"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="32dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@android:drawable/ic_menu_revert"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_icon"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="64dp"
+        app:cardBackgroundColor="@color/surface_l1"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/divider"
+        app:strokeWidth="1dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/white" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_email"
+            app:tint="@color/accent_blue" />
+
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
         android:layout_marginTop="32dp"
-        android:fontFamily="sans-serif-black"
-        android:text="Verify Email"
+        android:text="Check your inbox"
         android:textColor="@color/white"
-        android:textSize="40sp"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_back" />
+        app:layout_constraintTop_toBottomOf="@id/card_icon" />
 
     <TextView
-        android:id="@+id/tv_desc"
+        android:id="@+id/tv_subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="32dp"
-        android:text="We've sent a verification link to your email address. Please click the link in your inbox to activate your account."
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="We sent a 6-digit verification code to\na***@company.com"
         android:textColor="@color/text_secondary"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/tv_title"
-        app:layout_constraintTop_toBottomOf="@id/tv_title" />
-
-    <ImageView
-        android:id="@+id/animation_view"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="48dp"
-        android:src="@android:drawable/ic_dialog_email"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_desc"
-        app:tint="@color/accent_gold" />
+        app:layout_constraintTop_toBottomOf="@id/tv_title" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_check_status"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:layout_marginHorizontal="32dp"
-        android:layout_marginBottom="24dp"
-        android:text="I HAVE VERIFIED"
-        android:textColor="@color/black"
-        android:textStyle="bold"
-        app:backgroundTint="@color/white"
-        app:cornerRadius="16dp"
-        app:layout_constraintBottom_toTopOf="@id/btn_resend" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_resend"
-        style="@style/Widget.Material3.Button.TextButton"
+    <TextView
+        android:id="@+id/label_otp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
-        android:text="RESEND EMAIL"
-        android:textColor="@color/accent_gold"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="48dp"
+        android:text="ENTER VERIFICATION CODE"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:letterSpacing="0.1"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_subtitle" />
+
+    <LinearLayout
+        android:id="@+id/layout_otp"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginHorizontal="8dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/label_otp">
+
+        <EditText
+            android:id="@+id/otp1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/bg_otp_box"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:includeFontPadding="false"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/otp2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/bg_otp_box"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:includeFontPadding="false"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/otp3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/bg_otp_box"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:includeFontPadding="false"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/otp4"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/bg_otp_box"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:includeFontPadding="false"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/otp5"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/bg_otp_box"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:includeFontPadding="false"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/otp6"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/bg_otp_box"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:includeFontPadding="false"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Code expires in 04:37"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layout_otp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_verify"
+        style="@style/Widget.Material3.Button"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button_height"
+        android:layout_marginTop="48dp"
+        android:backgroundTint="@color/accent_blue"
+        android:text="VERIFY EMAIL"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:cornerRadius="@dimen/button_corner_radius"
+        app:layout_constraintTop_toBottomOf="@id/tv_timer" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_resend"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button_height"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/surface_l1"
+        android:text="Resend code"
+        android:textColor="@color/white"
+        app:cornerRadius="@dimen/button_corner_radius"
+        app:icon="@drawable/ic_refresh"
+        app:iconGravity="textStart"
+        app:iconTint="@color/text_secondary"
+        app:layout_constraintTop_toBottomOf="@id/btn_verify"
+        app:strokeColor="@color/divider" />
+
+    <TextView
+        android:id="@+id/btn_go_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:drawablePadding="8dp"
+        android:text="Wrong email? Go back"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        app:drawableStartCompat="@drawable/ic_back"
+        app:drawableTint="@color/text_secondary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_resend" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

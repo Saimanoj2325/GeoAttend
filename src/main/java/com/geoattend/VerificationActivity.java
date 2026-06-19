@@ -2,104 +2,219 @@ package com.geoattend;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.geoattend.employee.EmployeeDashboardActivity;
 import com.geoattend.employee.FaceEnrollmentActivity;
 import com.geoattend.model.User;
 import com.geoattend.utils.FirebaseHelper;
-import com.geoattend.utils.SecurityUtils;
+import com.geoattend.utils.SmtpMailer;
 import com.google.firebase.auth.FirebaseUser;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 public class VerificationActivity extends AppCompatActivity {
     private ProgressBar progressBar;
+    private EditText[] otpFields = new EditText[6];
+    private TextView tvTimer, btnResend;
+    private CountDownTimer countDownTimer;
+    private String userEmail;
+
+    private com.google.android.material.button.MaterialButton btnVerify;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verification);
 
-        progressBar = findViewById(R.id.progress_bar);
+        userEmail = getIntent().getStringExtra("email");
+        if (userEmail != null) {
+            TextView tvSubtitle = findViewById(R.id.tv_subtitle);
+            tvSubtitle.setText("We sent a 6-digit verification code to\n" + userEmail);
+        }
 
-        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+        progressBar = findViewById(R.id.progress_bar);
+        tvTimer = findViewById(R.id.tv_timer);
+        btnResend = findViewById(R.id.btn_resend);
+        btnVerify = findViewById(R.id.btn_verify);
+        btnVerify.setEnabled(false);
+        btnVerify.setAlpha(0.5f);
+
+        otpFields[0] = findViewById(R.id.otp1);
+        otpFields[1] = findViewById(R.id.otp2);
+        otpFields[2] = findViewById(R.id.otp3);
+        otpFields[3] = findViewById(R.id.otp4);
+        otpFields[4] = findViewById(R.id.otp5);
+        otpFields[5] = findViewById(R.id.otp6);
+
+        for (EditText et : otpFields) et.setText("");
+        setupOtpFields();
+
+        findViewById(R.id.btn_go_back).setOnClickListener(v -> finish());
+        findViewById(R.id.btn_verify).setOnClickListener(v -> verifyOtp());
+        btnResend.setOnClickListener(v -> resendOtp());
+
+        startResendTimer();
         
-        findViewById(R.id.btn_check_status).setOnClickListener(v -> checkVerificationStatus());
-        
-        findViewById(R.id.btn_resend).setOnClickListener(v -> resendVerificationEmail());
+        // DEV TIP: For this project, we'll show the OTP in a toast since we don't have an email server
+        showOtpHint();
     }
 
-    private void checkVerificationStatus() {
-        FirebaseUser user = FirebaseHelper.getAuth().getCurrentUser();
-        if (user == null) return;
-
-        progressBar.setVisibility(View.VISIBLE);
-        
-        // Reload user to get the latest verification status
-        user.reload().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                if (user.isEmailVerified()) {
-                    updateUserStatusAndNavigate(user.getUid());
-                } else {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Email not yet verified. Please check your inbox.", Toast.LENGTH_SHORT).show();
+    private void setupOtpFields() {
+        for (int i = 0; i < 6; i++) {
+            final int index = i;
+            otpFields[i].addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (s.length() == 1) {
+                        otpFields[index].animate().scaleX(1.1f).scaleY(1.1f).setDuration(100).withEndAction(() -> 
+                            otpFields[index].animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
+                        ).start();
+                        
+                        if (index < 5) {
+                            otpFields[index + 1].requestFocus();
+                        }
+                    }
+                    checkOtpCompletion();
                 }
-            } else {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(this, "Failed to refresh status: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                @Override public void afterTextChanged(Editable s) {}
+            });
+            
+            otpFields[i].setOnKeyListener((v, keyCode, event) -> {
+                if (keyCode == android.view.KeyEvent.KEYCODE_DEL && otpFields[index].getText().length() == 0 && index > 0) {
+                    otpFields[index - 1].requestFocus();
+                    return true;
+                }
+                return false;
+            });
+        }
+    }
+
+    private void checkOtpCompletion() {
+        boolean complete = true;
+        for (EditText et : otpFields) {
+            if (et.getText().length() == 0) {
+                complete = false;
+                break;
+            }
+        }
+        btnVerify.setEnabled(complete);
+        btnVerify.animate().alpha(complete ? 1.0f : 0.5f).setDuration(200).start();
+    }
+
+    private void showOtpHint() {
+        String uid = FirebaseHelper.getCurrentUserId();
+        if ("test_user".equals(uid)) return;
+
+        FirebaseHelper.getUserRef(uid).get().addOnSuccessListener(doc -> {
+            if (isFinishing() || isDestroyed()) return;
+            User user = doc.toObject(User.class);
+            if (user != null && user.getOtp() != null) {
+                Toast.makeText(this, "[DEMO] Your Verification Code is: " + user.getOtp(), Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    private void updateUserStatusAndNavigate(String uid) {
-        FirebaseHelper.getUserRef(uid).update("status", "ACTIVE")
-            .addOnSuccessListener(aVoid -> fetchUserAndNavigate(uid))
-            .addOnFailureListener(e -> {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(this, "Failed to update user status", Toast.LENGTH_SHORT).show();
-            });
+    private void startResendTimer() {
+        btnResend.setEnabled(false);
+        btnResend.setAlpha(0.5f);
+        countDownTimer = new CountDownTimer(60000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long minutes = (millisUntilFinished / 1000) / 60;
+                long seconds = (millisUntilFinished / 1000) % 60;
+                tvTimer.setText(String.format(Locale.getDefault(), "Code expires in %02d:%02d", minutes, seconds));
+            }
+
+            @Override
+            public void onFinish() {
+                tvTimer.setText("Code expired");
+                btnResend.setEnabled(true);
+                btnResend.setAlpha(1.0f);
+            }
+        }.start();
     }
 
-    private void fetchUserAndNavigate(String uid) {
+    private void verifyOtp() {
+        StringBuilder sb = new StringBuilder();
+        for (EditText et : otpFields) sb.append(et.getText().toString());
+        String enteredOtp = sb.toString();
+
+        if (enteredOtp.length() < 6) {
+            Toast.makeText(this, "Please enter 6-digit code", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        progressBar.setVisibility(View.VISIBLE);
+        String uid = FirebaseHelper.getCurrentUserId();
+        
         FirebaseHelper.getUserRef(uid).get().addOnSuccessListener(doc -> {
-            progressBar.setVisibility(View.GONE);
             User user = doc.toObject(User.class);
-            if (user != null) {
+            if (user != null && enteredOtp.equals(user.getOtp())) {
+                // OTP Correct
+                FirebaseHelper.getUserRef(uid).update("status", "ACTIVE");
                 handleNavigation(user);
+            } else {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(this, "Invalid verification code", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(e -> {
             progressBar.setVisibility(View.GONE);
-            Toast.makeText(this, "Failed to fetch user profile", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Verification failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void resendOtp() {
+        if (userEmail == null) {
+            Toast.makeText(this, "Email not found. Please try logging in again.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        progressBar.setVisibility(View.VISIBLE);
+        String newOtp = String.format(Locale.getDefault(), "%06d", new Random().nextInt(1000000));
+        String uid = FirebaseHelper.getCurrentUserId();
+        
+        FirebaseHelper.getUserRef(uid).update("otp", newOtp).addOnSuccessListener(aVoid -> {
+            SmtpMailer.sendOtpEmail(userEmail, newOtp, new SmtpMailer.MailCallback() {
+                @Override
+                public void onSuccess() {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(VerificationActivity.this, "New code sent!", Toast.LENGTH_SHORT).show();
+                    startResendTimer();
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(VerificationActivity.this, "Failed to send email. Try again.", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 
     private void handleNavigation(User user) {
-        // Enforce the onboarding flow in correct sequence:
-        // 1. Device Enrollment
-        // 2. Face Enrollment
-        // 3. Dashboard
-        
         if (user.getRegisteredDeviceId() == null) {
             com.geoattend.utils.DeviceBindingManager deviceManager = new com.geoattend.utils.DeviceBindingManager(this);
             String deviceId = deviceManager.getDeviceBindingId();
             
-            // --- STRICT 1:1 DEVICE BINDING ENFORCEMENT ---
-            // Secondary check: Ensure no other ACTIVE user is already using this device ID
             FirebaseHelper.getFirestore().collection("users")
                 .whereEqualTo("registeredDeviceId", deviceId)
                 .get()
                 .addOnSuccessListener(query -> {
                     if (query != null && !query.isEmpty()) {
-                        // This device belongs to another user. Prevent this user from binding.
                         progressBar.setVisibility(View.GONE);
-                        Toast.makeText(this, "Security Violation: This device is already bound to another account.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Security Violation: This device is already bound.", Toast.LENGTH_LONG).show();
                         FirebaseHelper.getAuth().signOut();
                         finish();
                     } else {
-                        // Device is clean, perform binding
                         bindDeviceToUser(user, deviceId, deviceManager);
                     }
                 })
@@ -114,7 +229,6 @@ public class VerificationActivity extends AppCompatActivity {
 
     private void bindDeviceToUser(User user, String deviceId, com.geoattend.utils.DeviceBindingManager deviceManager) {
         Map<String, Object> metadata = deviceManager.getDeviceMetadata();
-        
         Map<String, Object> updates = new HashMap<>();
         updates.put("registeredDeviceId", deviceId);
         updates.put("deviceInfo", metadata);
@@ -132,32 +246,15 @@ public class VerificationActivity extends AppCompatActivity {
             });
     }
 
+    @androidx.camera.core.ExperimentalGetImage
     private void checkNextOnboardingStep(User user) {
         if (!user.isFaceRegistered()) {
-            proceedToFaceEnrollment(user);
+            startActivity(new Intent(this, FaceEnrollmentActivity.class));
+            finishAffinity();
         } else {
-            // All onboarding done
             FirebaseHelper.getUserRef(user.getUid()).update("status", "ACTIVE");
             startActivity(new Intent(this, EmployeeDashboardActivity.class));
             finishAffinity();
-        }
-    }
-
-    private void proceedToFaceEnrollment(User user) {
-        startActivity(new Intent(this, FaceEnrollmentActivity.class));
-        finishAffinity();
-    }
-
-    private void resendVerificationEmail() {
-        FirebaseUser user = FirebaseHelper.getAuth().getCurrentUser();
-        if (user != null) {
-            user.sendEmailVerification().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    Toast.makeText(this, "Verification email resent!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Failed to resend: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
         }
     }
 }

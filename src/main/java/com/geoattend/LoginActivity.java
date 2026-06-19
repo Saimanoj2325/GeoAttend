@@ -44,9 +44,39 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(this, RegisterActivity.class))
         );
 
+        setupPasswordVisibilityToggle();
+
         if (FirebaseHelper.getAuth().getCurrentUser() != null) {
             checkUserStatusAndNavigate(FirebaseHelper.getAuth().getCurrentUser().getUid());
         }
+        
+        startLogoAnimation();
+    }
+
+    private void startLogoAnimation() {
+        View logo = findViewById(R.id.card_logo_small);
+        android.animation.ObjectAnimator breatheX = android.animation.ObjectAnimator.ofFloat(logo, "scaleX", 1f, 1.1f, 1f);
+        android.animation.ObjectAnimator breatheY = android.animation.ObjectAnimator.ofFloat(logo, "scaleY", 1f, 1.1f, 1f);
+        breatheX.setDuration(3000);
+        breatheX.setRepeatCount(android.animation.ValueAnimator.INFINITE);
+        breatheY.setDuration(3000);
+        breatheY.setRepeatCount(android.animation.ValueAnimator.INFINITE);
+        breatheX.start();
+        breatheY.start();
+    }
+
+    private void setupPasswordVisibilityToggle() {
+        android.widget.ImageView ivEye = findViewById(R.id.iv_eye_password);
+        ivEye.setOnClickListener(v -> {
+            if (etPassword.getTransformationMethod() instanceof android.text.method.PasswordTransformationMethod) {
+                etPassword.setTransformationMethod(android.text.method.HideReturnsTransformationMethod.getInstance());
+                ivEye.setImageResource(android.R.drawable.ic_menu_view); // Placeholder for open eye
+            } else {
+                etPassword.setTransformationMethod(android.text.method.PasswordTransformationMethod.getInstance());
+                ivEye.setImageResource(R.drawable.ic_eye);
+            }
+            etPassword.setSelection(etPassword.getText().length());
+        });
     }
 
     private void loginUser() {
@@ -85,14 +115,6 @@ public class LoginActivity extends AppCompatActivity {
             if (doc.exists()) {
                 User user = doc.toObject(User.class);
                 if (user != null) {
-                    if (FirebaseHelper.getAuth().getCurrentUser() != null && 
-                        !FirebaseHelper.getAuth().getCurrentUser().isEmailVerified()) {
-                        progressBar.setVisibility(View.GONE);
-                        Intent intent = new Intent(this, VerificationActivity.class);
-                        intent.putExtra("email", FirebaseHelper.getAuth().getCurrentUser().getEmail());
-                        startActivity(intent);
-                        return;
-                    }
                     handleSecurityFlow(user);
                 } else {
                     progressBar.setVisibility(View.GONE);
@@ -111,26 +133,16 @@ public class LoginActivity extends AppCompatActivity {
         DeviceBindingManager deviceManager = new DeviceBindingManager(this);
         String currentBindingId = deviceManager.getDeviceBindingId();
 
-        // 1. Email Verification Check (Enforced)
-        if (FirebaseHelper.getAuth().getCurrentUser() != null && 
-            !FirebaseHelper.getAuth().getCurrentUser().isEmailVerified()) {
-            Toast.makeText(this, "Please verify your email first", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(this, VerificationActivity.class);
-            intent.putExtra("email", FirebaseHelper.getAuth().getCurrentUser().getEmail());
-            startActivity(intent);
-            return;
-        }
-
-        // 2. Device Binding Enforcement
-        if (user.getRegisteredDeviceId() != null && !user.getRegisteredDeviceId().equals(currentBindingId)) {
-            Toast.makeText(this, "This account is bound to another device. Contact Admin.", Toast.LENGTH_LONG).show();
+        // 1. Check for basic account status
+        if ("DISABLED".equals(user.getStatus())) {
+            Toast.makeText(this, "Your account has been disabled. Contact Admin.", Toast.LENGTH_LONG).show();
             FirebaseHelper.getAuth().signOut();
             progressBar.setVisibility(View.GONE);
             return;
         }
 
-        // 3. Check for incomplete onboarding
-        if (user.getRegisteredDeviceId() == null || !user.isFaceRegistered()) {
+        // 2. Check for incomplete verification (OTP Phase)
+        if (!"ACTIVE".equals(user.getStatus()) && !"admin".equalsIgnoreCase(user.getRole())) {
             Intent intent = new Intent(this, VerificationActivity.class);
             intent.putExtra("email", user.getEmail());
             startActivity(intent);
@@ -138,14 +150,24 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
+        // 3. Device Binding Enforcement
+        if (user.getRegisteredDeviceId() != null && !user.getRegisteredDeviceId().equals(currentBindingId)) {
+            Toast.makeText(this, "This account is bound to another device. Contact Admin.", Toast.LENGTH_LONG).show();
+            FirebaseHelper.getAuth().signOut();
+            progressBar.setVisibility(View.GONE);
+            return;
+        }
+
+        // 4. Check for incomplete Biometric Onboarding
+        if (!"admin".equalsIgnoreCase(user.getRole()) && !user.isFaceRegistered()) {
+            startActivity(new Intent(this, FaceEnrollmentActivity.class));
+            finish();
+            return;
+        }
+
         // Initialize Session
         new SessionManager(this).startSession(UUID.randomUUID().toString());
         progressBar.setVisibility(View.GONE);
-
-        // 4. Update Status to ACTIVE if all steps completed
-        if (!"ACTIVE".equals(user.getStatus()) && !"admin".equalsIgnoreCase(user.getRole())) {
-             FirebaseHelper.getUserRef(user.getUid()).update("status", "ACTIVE");
-        }
 
         // 5. Final Navigation
         if ("admin".equalsIgnoreCase(user.getRole())) {

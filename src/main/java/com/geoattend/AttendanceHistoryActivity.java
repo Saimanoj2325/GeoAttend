@@ -37,8 +37,14 @@ public class AttendanceHistoryActivity extends AppCompatActivity {
         adapter = new HistoryAdapter(filteredRecords);
         binding.rvHistory.setAdapter(adapter);
 
+        binding.btnCalendar.setOnClickListener(v -> {
+            int visibility = binding.calendarView.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE;
+            binding.calendarView.setVisibility(visibility);
+        });
+
         binding.calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
             filterRecords(year, month, dayOfMonth);
+            binding.calendarView.setVisibility(View.GONE);
         });
 
         initNavigation();
@@ -68,18 +74,38 @@ public class AttendanceHistoryActivity extends AppCompatActivity {
     private void initNavigation() {
         binding.bottomNavigation.setSelectedItemId(R.id.nav_attendance);
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
+            // Premium Click Animation
+            View itemView = findViewById(item.getItemId());
+            if (itemView != null) {
+                itemView.animate()
+                    .scaleX(0.85f)
+                    .scaleY(0.85f)
+                    .alpha(0.7f)
+                    .setDuration(100)
+                    .withEndAction(() -> 
+                        itemView.animate()
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .alpha(1.0f)
+                            .setDuration(150)
+                            .start()
+                    ).start();
+            }
+
             int id = item.getItemId();
+            if (id == R.id.nav_attendance) return true;
+
             if (id == R.id.nav_dashboard) {
                 startActivity(new Intent(this, EmployeeDashboardActivity.class));
-                overridePendingTransition(0, 0);
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
             } else if (id == R.id.nav_notifications) {
                 startActivity(new Intent(this, NotificationsActivity.class));
-                overridePendingTransition(0, 0);
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
             } else if (id == R.id.nav_profile) {
                 startActivity(new Intent(this, ProfileActivity.class));
-                overridePendingTransition(0, 0);
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
             }
             return true;
@@ -108,8 +134,38 @@ public class AttendanceHistoryActivity extends AppCompatActivity {
                     filteredRecords.clear();
                     filteredRecords.addAll(allRecords); // Default show all
                     adapter.notifyDataSetChanged();
+                    updateSummaryStats(allRecords);
                 }
             });
+    }
+
+    private void updateSummaryStats(List<AttendanceRecord> records) {
+        int presentCount = 0;
+        java.util.Set<String> uniqueDays = new java.util.HashSet<>();
+        
+        for (AttendanceRecord r : records) {
+            if ("IN".equals(r.getType()) && r.getTimestamp() != null) {
+                String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(r.getTimestamp().toDate());
+                if (uniqueDays.add(date)) {
+                    presentCount++;
+                }
+            }
+        }
+        
+        // Calculate based on current month
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        int totalDaysInMonth = cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH);
+        int daysPassed = cal.get(java.util.Calendar.DAY_OF_MONTH);
+        
+        // Assuming 22 work days for a full month
+        int absentCount = Math.max(0, daysPassed - presentCount);
+        int rate = (presentCount * 100) / Math.max(1, daysPassed);
+
+        binding.tvPresentCount.setText(String.valueOf(presentCount));
+        binding.tvAbsentCount.setText(String.valueOf(absentCount));
+        binding.tvAttendanceRate.setText(rate + "%");
+        
+        binding.tvMonth.setText(new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(new java.util.Date()));
     }
 
     private static class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
@@ -131,36 +187,49 @@ public class AttendanceHistoryActivity extends AppCompatActivity {
             AttendanceRecord record = list.get(position);
             if (record.getTimestamp() != null) {
                 holder.tvDate.setText(dateFormat.format(record.getTimestamp().toDate()));
-                holder.tvTime.setText(timeFormat.format(record.getTimestamp().toDate()));
+                holder.tvTimeRange.setText(timeFormat.format(record.getTimestamp().toDate()));
             }
-            holder.tvLocation.setText(record.getGeofenceName());
-            holder.tvStatus.setText(record.getType() + " - " + record.getStatus());
             
-            String type = record.getType() != null ? record.getType() : "";
-            int color = type.contains("IN") ? 0xFF10B981 : 0xFFEF4444;
-            holder.statusNode.setBackgroundColor(color);
+            String status = record.getStatus() != null ? record.getStatus() : "PENDING";
+            holder.tvStatus.setText(status);
+            
+            int color = "FLAGGED".equals(status) || "REJECTED".equals(status) ? 0xFFEF4444 : 0xFF10B981;
+            holder.layoutStatus.getBackground().setTint(color & 0x1AFFFFFF); // Very faint
             holder.tvStatus.setTextColor(color);
 
-            // Additional details in snippet
-            holder.tvDetails.setText(String.format(Locale.getDefault(), "Device: %s • Accuracy: %.1fm", 
-                record.getDeviceId() != null ? record.getDeviceId().substring(0, 8) + "..." : "Unknown",
-                record.getAccuracy()));
+            // Dynamic logic: If it's an OUT record, try to find the duration
+            String details = record.getType() + " @ " + record.getGeofenceName();
+            if (("OUT".equals(record.getType()) || "AUTO_OUT".equals(record.getType())) && position < list.size() - 1) {
+                // Look for previous record in the sorted list (since it's descending, the previous time is at position + 1)
+                AttendanceRecord prev = list.get(position + 1);
+                if ("IN".equals(prev.getType()) && record.getTimestamp() != null && prev.getTimestamp() != null) {
+                    long diff = record.getTimestamp().toDate().getTime() - prev.getTimestamp().toDate().getTime();
+                    long hours = diff / (1000 * 60 * 60);
+                    long mins = (diff / (1000 * 60)) % 60;
+                    details = String.format(Locale.getDefault(), "Worked %dh %dm", hours, mins);
+                }
+            }
+            holder.tvDuration.setText(details);
+            
+            holder.progressWork.setProgress(100);
+            holder.progressWork.getProgressDrawable().setTint(color);
         }
 
         @Override
         public int getItemCount() { return list.size(); }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView tvDate, tvTime, tvLocation, tvStatus, tvDetails;
-            View statusNode;
+            TextView tvDate, tvTimeRange, tvStatus, tvDuration;
+            View layoutStatus;
+            android.widget.ProgressBar progressWork;
             public ViewHolder(View itemView) {
                 super(itemView);
                 tvDate = itemView.findViewById(R.id.tv_date);
-                tvTime = itemView.findViewById(R.id.tv_time);
-                tvLocation = itemView.findViewById(R.id.tv_location);
+                tvTimeRange = itemView.findViewById(R.id.tv_time_range);
                 tvStatus = itemView.findViewById(R.id.tv_status);
-                tvDetails = itemView.findViewById(R.id.tv_details);
-                statusNode = itemView.findViewById(R.id.status_node);
+                tvDuration = itemView.findViewById(R.id.tv_duration);
+                layoutStatus = itemView.findViewById(R.id.layout_status);
+                progressWork = itemView.findViewById(R.id.progress_work);
             }
         }
     }

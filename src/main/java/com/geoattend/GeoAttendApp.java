@@ -13,6 +13,10 @@ public class GeoAttendApp extends Application {
         FirebaseApp.initializeApp(this);
         
         // Initialize OSMDroid Configuration
+        Configuration.getInstance().setUserAgentValue(getPackageName());
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+        
+        // Cache settings
+        Configuration.getInstance().setCacheMapTileCount((short) 12);
     }
 }

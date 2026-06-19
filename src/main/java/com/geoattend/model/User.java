@@ -17,8 +17,11 @@ public class User {
     private boolean isDeviceEnrolled;
     private Map<String, Object> deviceInfo;
     private String assignedGeofenceId;
+    private String department;
+    private String managerName;
     private Map<String, List<Double>> faceTemplates;
     private String status;
+    private String otp;
 
     public User() {}
 
@@ -56,8 +59,14 @@ public class User {
     public void setDeviceInfo(Map<String, Object> deviceInfo) { this.deviceInfo = deviceInfo; }
     public String getAssignedGeofenceId() { return assignedGeofenceId; }
     public void setAssignedGeofenceId(String assignedGeofenceId) { this.assignedGeofenceId = assignedGeofenceId; }
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
+    public String getManagerName() { return managerName; }
+    public void setManagerName(String managerName) { this.managerName = managerName; }
     public Map<String, List<Double>> getFaceTemplates() { return faceTemplates; }
     public void setFaceTemplates(Map<String, List<Double>> faceTemplates) { this.faceTemplates = faceTemplates; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getOtp() { return otp; }
+    public void setOtp(String otp) { this.otp = otp; }
 }
