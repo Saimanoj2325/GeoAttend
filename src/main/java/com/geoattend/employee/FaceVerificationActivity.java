@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -59,7 +60,20 @@ public class FaceVerificationActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private androidx.camera.view.PreviewView previewView;
     
-    private static final double MATCH_THRESHOLD = 0.8; // Lowered from 1.0 for better sensitivity
+    private static final double MATCH_THRESHOLD = 0.95; // Balanced threshold for MobileFaceNet
+    private int matchFailureCount = 0;
+    private static final int MAX_MATCH_ATTEMPTS = 5;
+
+    private double minMatchDistance = Double.MAX_VALUE;
+    private List<String> passedChallenges = new ArrayList<>();
+
+    private enum State {
+        CHALLENGE,
+        MATCHING,
+        VERIFIED,
+        FAILED
+    }
+    private State currentState = State.CHALLENGE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +91,7 @@ public class FaceVerificationActivity extends AppCompatActivity {
         try {
             faceProcessor = new FaceRecognitionProcessor(this);
         } catch (IOException e) {
+            Toast.makeText(this, "Model init failed", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -102,12 +117,16 @@ public class FaceVerificationActivity extends AppCompatActivity {
         challenges.add("SMILE WIDELY");
         challenges.add("TURN HEAD LEFT");
         Collections.shuffle(challenges);
-        challenges = challenges.subList(0, 2); // Pick 2 random
+        challenges = challenges.subList(0, 2); 
     }
 
     private void fetchUserData() {
         FirebaseHelper.getUserRef(FirebaseHelper.getCurrentUserId()).get().addOnSuccessListener(doc -> {
             currentUser = doc.toObject(User.class);
+            if (currentUser == null || currentUser.getFaceTemplates() == null || currentUser.getFaceTemplates().isEmpty()) {
+                Toast.makeText(this, "Biometric profile not found. Please enroll first.", Toast.LENGTH_LONG).show();
+                finish();
+            }
         });
     }
 
@@ -140,7 +159,7 @@ public class FaceVerificationActivity extends AppCompatActivity {
                 .build();
 
         imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(this), image -> {
-            if (isProcessing || currentUser == null) {
+            if (isProcessing || isSubmitting || currentUser == null || currentState == State.VERIFIED || currentState == State.FAILED) {
                 image.close();
                 return;
             }
@@ -170,60 +189,94 @@ public class FaceVerificationActivity extends AppCompatActivity {
     }
 
     private void handleLivenessAndMatch(Face face, ImageProxy imageProxy) {
-        if (livenessStep < challenges.size()) {
-            String currentChallenge = challenges.get(livenessStep);
-            runOnUiThread(() -> {
-                tvInstruction.setText(currentChallenge);
-                tvInstruction.setTextColor(ContextCompat.getColor(this, com.geoattend.R.color.accent_gold));
-            });
+        if (currentState == State.CHALLENGE) {
+            if (livenessStep < challenges.size()) {
+                String currentChallenge = challenges.get(livenessStep);
+                runOnUiThread(() -> {
+                    tvInstruction.setText(currentChallenge);
+                    tvInstruction.setTextColor(ContextCompat.getColor(this, com.geoattend.R.color.accent_gold));
+                });
 
-            boolean passed = false;
-            switch (currentChallenge) {
-                case "BLINK BOTH EYES":
-                    if (face.getLeftEyeOpenProbability() != null && face.getLeftEyeOpenProbability() < 0.2) passed = true;
-                    break;
-                case "SMILE WIDELY":
-                    if (face.getSmilingProbability() != null && face.getSmilingProbability() > 0.8) passed = true;
-                    break;
-                case "TURN HEAD LEFT":
-                    if (face.getHeadEulerAngleY() > 20) passed = true;
-                    break;
-            }
-
-            if (passed) {
-                livenessStep++;
-                if (livenessStep >= challenges.size()) {
-                    runOnUiThread(() -> {
-                        tvInstruction.setText("MATCHING BIOMETRICS...");
-                        tvInstruction.setTextColor(ContextCompat.getColor(this, com.geoattend.R.color.accent_blue));
-                    });
+                boolean passed = false;
+                switch (currentChallenge) {
+                    case "BLINK BOTH EYES":
+                        if (face.getLeftEyeOpenProbability() != null && face.getLeftEyeOpenProbability() < 0.25) passed = true;
+                        break;
+                    case "SMILE WIDELY":
+                        if (face.getSmilingProbability() != null && face.getSmilingProbability() > 0.75) passed = true;
+                        break;
+                    case "TURN HEAD LEFT":
+                        if (face.getHeadEulerAngleY() > 20) passed = true;
+                        break;
                 }
+
+                if (passed) {
+                    passedChallenges.add(currentChallenge);
+                    livenessStep++;
+                    if (livenessStep >= challenges.size()) {
+                        currentState = State.MATCHING;
+                        runOnUiThread(() -> {
+                            tvInstruction.setText("IDENTIFYING...");
+                            tvInstruction.setTextColor(ContextCompat.getColor(this, com.geoattend.R.color.accent_blue));
+                        });
+                    }
+                }
+                imageProxy.close();
             }
-            imageProxy.close();
-        } else {
-            // Liveness Passed, perform Face Match
+        } else if (currentState == State.MATCHING) {
             isProcessing = true;
             Bitmap bitmap = imageProxy.toBitmap();
             float[] currentEmbedding = faceProcessor.getEmbedding(bitmap, face.getBoundingBox());
             
             if (currentEmbedding != null) {
-                double minDistance = verifyMatch(currentEmbedding);
-                if (minDistance < MATCH_THRESHOLD) {
+                minMatchDistance = verifyMatch(currentEmbedding);
+                Log.d("FaceVerification", "Min distance: " + minMatchDistance);
+
+                if (minMatchDistance < MATCH_THRESHOLD) {
+                    currentState = State.VERIFIED;
                     runOnUiThread(() -> {
-                        tvInstruction.setText("VERIFIED");
+                        tvInstruction.setText("IDENTITY VERIFIED");
                         tvInstruction.setTextColor(ContextCompat.getColor(this, com.geoattend.R.color.accent_emerald));
+                        
+                        // Victory Pop Animation
+                        tvInstruction.setScaleX(0.5f);
+                        tvInstruction.setScaleY(0.5f);
+                        tvInstruction.animate().scaleX(1.1f).scaleY(1.1f).setDuration(300)
+                            .withEndAction(() -> tvInstruction.animate().scaleX(1.0f).scaleY(1.0f).setDuration(150).start())
+                            .start();
+
                         progressBar.setVisibility(View.VISIBLE);
-                        new Handler().postDelayed(this::submitAttendance, 1000);
+                        new Handler().postDelayed(this::submitAttendance, 500);
                     });
                 } else {
+                    matchFailureCount++;
+                    Log.d("FaceVerification", "Match attempt failed: " + matchFailureCount);
+                    
                     runOnUiThread(() -> {
-                        Toast.makeText(this, "Face Match Failed", Toast.LENGTH_SHORT).show();
-                        isProcessing = false;
+                        tvInstruction.setText("IDENTIFYING... (" + matchFailureCount + ")");
+                        tvInstruction.setTextColor(ContextCompat.getColor(this, com.geoattend.R.color.accent_gold));
                     });
+
+                    if (matchFailureCount >= MAX_MATCH_ATTEMPTS) {
+                        currentState = State.FAILED;
+                        runOnUiThread(() -> {
+                            tvInstruction.setText("FACE MATCH FAILED");
+                            tvInstruction.setTextColor(ContextCompat.getColor(this, com.geoattend.R.color.error));
+                            Toast.makeText(this, "Biometric mismatch. Please ensure good lighting.", Toast.LENGTH_LONG).show();
+                            new Handler().postDelayed(this::finish, 2500);
+                        });
+                    } else {
+                        // Small delay before next attempt to allow user to adjust
+                        new Handler().postDelayed(() -> {
+                            isProcessing = false;
+                        }, 400);
+                    }
                 }
             } else {
                 isProcessing = false;
             }
+            imageProxy.close();
+        } else {
             imageProxy.close();
         }
     }
@@ -277,8 +330,29 @@ public class FaceVerificationActivity extends AppCompatActivity {
         record.setAccuracy(acc);
         record.setDistanceToOffice(dist);
         record.setDeviceId(SecurityUtils.getAppSpecificDeviceId(this));
-        record.setStatus("VERIFIED");
-        record.setMockLocation(false); 
+        
+        // Populate Security & Liveness fields
+        record.setLivenessResult("VERIFIED_CHALLENGES: " + String.join(" | ", passedChallenges));
+        record.setRooted(com.geoattend.utils.SecurityManager.isDeviceCompromised());
+        record.setUsbDebugging(com.geoattend.utils.SecurityManager.isUsbDebuggingEnabled(this));
+        record.setIntegrityVerdict(com.geoattend.utils.SecurityManager.getIntegrityVerdict());
+        
+        // Advanced Risk Assessment
+        Location loc = new Location("verified_gps");
+        loc.setLatitude(lat);
+        loc.setLongitude(lng);
+        int mockRisk = com.geoattend.utils.SecurityManager.getMockRiskScore(loc, this);
+        record.setMockLocation(mockRisk >= 50);
+        
+        // Final risk score aggregation
+        int finalRisk = mockRisk;
+        if (record.isRooted()) finalRisk += 40;
+        if (record.isUsbDebugging()) finalRisk += 25;
+        if (minMatchDistance > 0.85) finalRisk += 15;
+        record.setRiskScore(Math.min(100, finalRisk));
+        
+        record.setStatus(finalRisk > 70 ? "FLAGGED" : "VERIFIED");
+        record.setFailureReason("Liveness: OK | Match Dist: " + String.format(Locale.getDefault(), "%.4f", minMatchDistance));
 
         // Final duplicate check before adding - Using a simplified query to avoid missing index error
         // Filter by userId only and check the date in-memory
