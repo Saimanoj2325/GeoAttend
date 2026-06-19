@@ -8,7 +8,16 @@ GeoAttend is an Android attendance app that combines **geofencing**, **on-device
 
 Built solo as a personal project. Core security and ML logic is implemented and functional; see [Status](#-current-status) below for what's solid vs. still in progress.
 
----
+## 🎥 Demo
+
+<p align="center">
+  <img src="assets/demo.gif" alt="GeoAttend Demo" width="300"/>
+</p>
+
+<p align="center">
+  <em>Check In and Check out in GeoAttend with Face Verification</em>
+</p>
+
 
 ## 🛡️ Security Approach
 
